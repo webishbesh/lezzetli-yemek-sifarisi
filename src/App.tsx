@@ -21,8 +21,26 @@ import { ToastContainer } from './components/Toast';
 import { SearchModal } from './components/SearchModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
 
+const PAGE_PATHS: Record<PageId, string> = {
+  home: '/',
+  menu: '/menu',
+  about: '/about',
+  contact: '/contact',
+  profile: '/profile',
+  orders: '/orders',
+  favorites: '/favorites',
+};
+
+const pageFromLocation = (): PageId => {
+  const path = window.location.pathname.replace(/\/+$/, '') || '/';
+  const page = (Object.entries(PAGE_PATHS) as [PageId, string][]).find(
+    ([, pagePath]) => pagePath === path
+  )?.[0];
+  return page || 'home';
+};
+
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<PageId>('home');
+  const [currentPage, setCurrentPage] = useState<PageId>(pageFromLocation);
   const [profileTab, setProfileTab] = useState<string>('overview');
   const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
     try {
@@ -73,6 +91,31 @@ export default function App() {
 
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  useEffect(() => {
+    const initialPage = pageFromLocation();
+    const initialPath = PAGE_PATHS[initialPage];
+    const requestedPath = window.location.pathname.replace(/\/+$/, '') || '/';
+
+    if (requestedPath !== initialPath) {
+      window.history.replaceState({ page: initialPage }, '', initialPath);
+    } else {
+      window.history.replaceState({ page: initialPage }, '', window.location.href);
+    }
+
+    const handlePopState = () => {
+      const page = pageFromLocation();
+      const tab = new URLSearchParams(window.location.search).get('tab');
+      setCurrentPage(page);
+      setProfileTab(page === 'profile' ? tab || 'overview' : 'overview');
+      setIsCartOpen(false);
+      setIsSearchModalOpen(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const showToast = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev.slice(-1), { id, message, type }]);
@@ -106,9 +149,15 @@ export default function App() {
   };
 
   const handleNavigate = (page: PageId, tab?: string) => {
-    if (tab) {
-      setProfileTab(tab);
+    const query = page === 'profile' && tab ? `?tab=${encodeURIComponent(tab)}` : '';
+    const nextPath = `${PAGE_PATHS[page]}${query}`;
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+
+    if (currentPath !== nextPath) {
+      window.history.pushState({ page, tab }, '', nextPath);
     }
+
+    setProfileTab(page === 'profile' ? tab || 'overview' : 'overview');
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -147,8 +196,7 @@ export default function App() {
   const handleLogout = () => {
     setUserProfile(null);
     setCart([]);
-    setCurrentPage('home');
-    setProfileTab('overview');
+    handleNavigate('home');
     localStorage.removeItem('lezzetliUserProfile');
     showToast('Hesabdan çıxış edildi', 'info');
   };
