@@ -235,26 +235,6 @@ export const Header: React.FC<HeaderProps> = ({
               {item.label}
             </button>
           ))}
-          <div className="pt-2 border-t border-neutral-100 flex items-center justify-between">
-            <button
-              id="mobile-btn-admin"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenAdmin();
-              }}
-              className="flex items-center gap-2 text-sm font-semibold text-neutral-600 hover:text-black py-2 px-3"
-            >
-              <Shield className="w-4 h-4 text-black" />
-              <span>Admin Paneli</span>
-            </button>
-            <button
-              id="mobile-btn-profile"
-              onClick={() => handleNav('profile')}
-              className="text-sm font-bold text-[#111] py-2 px-3"
-            >
-              Aysel A. (Profil)
-            </button>
-          </div>
         </div>
       )}
     </header>
