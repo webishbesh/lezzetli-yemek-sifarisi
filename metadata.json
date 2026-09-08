@@ -1,0 +1,6 @@
+{
+  "name": "Matbaxh — Yemək Sifarişi",
+  "description": "Matbaxh - Təzə, dadlı və keyfiyyətli yemək sifarişi platforması. Geniş menyu, sürətli çatdırılma və interaktiv profil idarəetməsi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
